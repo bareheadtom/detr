@@ -58,11 +58,29 @@ class DETR(nn.Module):
         """
         if isinstance(samples, (list, torch.Tensor)):
             samples = nested_tensor_from_tensor_list(samples)
+        tensorss, masks = samples.decompose()
+        #print("input backbone tensors.shape:",tensorss.shape, "maske.shape", masks.shape)
         features, pos = self.backbone(samples)
 
-        src, mask = features[-1].decompose()
+        feature, mask = features[-1].decompose()
+        #print("feature:",feature.shape, "mask",mask.shape, "pos",pos[-1].shape) 
+        
+        #print("self.input_proj(feature)",self.input_proj(feature).shape)
+        bs, c, h, w = self.input_proj(feature).shape
+        #print("query_embed unrepeat",self.query_embed.weight.unsqueeze(1).shape)
+        #print("query_embed",self.query_embed.weight.unsqueeze(1).repeat(1, bs, 1).shape)
         assert mask is not None
-        hs = self.transformer(self.input_proj(src), mask, self.query_embed.weight, pos[-1])[0]
+        hs = self.transformer(self.input_proj(feature), mask, self.query_embed.weight, pos[-1])[0]
+        #print("hs",hs.shape)
+
+
+        # input backbone tensors.shape: torch.Size([2, 3, 736, 1105]) maske.shape torch.Size([2, 736, 1105])
+        # feature: torch.Size([2, 2048, 23, 35]) mask torch.Size([2, 23, 35]) pos torch.Size([2, 256, 23, 35])
+        # self.input_proj(feature) torch.Size([2, 256, 23, 35])
+        # query_embed unrepeat torch.Size([100, 1, 256])
+        # query_embed torch.Size([100, 2, 256])
+        # hs torch.Size([6, 2, 100, 256])
+
 
         outputs_class = self.class_embed(hs)
         outputs_coord = self.bbox_embed(hs).sigmoid()

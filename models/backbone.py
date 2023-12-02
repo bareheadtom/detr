@@ -62,6 +62,7 @@ class BackboneBase(nn.Module):
         for name, parameter in backbone.named_parameters():
             if not train_backbone or 'layer2' not in name and 'layer3' not in name and 'layer4' not in name:
                 parameter.requires_grad_(False)
+        # 重命名
         if return_interm_layers:
             return_layers = {"layer1": "0", "layer2": "1", "layer3": "2", "layer4": "3"}
         else:
@@ -70,12 +71,16 @@ class BackboneBase(nn.Module):
         self.num_channels = num_channels
 
     def forward(self, tensor_list: NestedTensor):
+        #print("self.body",self.body)
+        #print("tensor_list.mask",tensor_list.mask.shape)
         xs = self.body(tensor_list.tensors)
         out: Dict[str, NestedTensor] = {}
         for name, x in xs.items():
             m = tensor_list.mask
             assert m is not None
+            #print("m[None].shape, x.shape[-2:]",m[None].shape, x.shape[-2:])
             mask = F.interpolate(m[None].float(), size=x.shape[-2:]).to(torch.bool)[0]
+            #print("mask",mask.shape)
             out[name] = NestedTensor(x, mask)
         return out
 

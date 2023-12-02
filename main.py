@@ -15,7 +15,16 @@ import util.misc as utils
 from datasets import build_dataset, get_coco_api_from_dataset
 from engine import evaluate, train_one_epoch
 from models import build_model
-
+# python -m torch.distributed.launch --nproc_per_node=4 --use_env main.py --coco_path /datasets/COCO/
+# Namespace(lr=0.0001, lr_backbone=1e-05, batch_size=2, weight_decay=0.0001, epochs=300, lr_drop=200,
+#            clip_max_norm=0.1, frozen_weights=None, backbone='resnet50', dilation=False, 
+#            position_embedding='sine', enc_layers=6, dec_layers=6, dim_feedforward=2048, hidden_dim=256, 
+#            dropout=0.1, nheads=8, num_queries=100, pre_norm=False, masks=False, aux_loss=True, set_cost_class=1, 
+#            set_cost_bbox=5, set_cost_giou=2, mask_loss_coef=1, dice_loss_coef=1, bbox_loss_coef=5, 
+#            giou_loss_coef=2, eos_coef=0.1, dataset_file='coco', coco_path='/datasets/COCO/',
+#              coco_panoptic_path=None, remove_difficult=False, output_dir='', device='cuda', seed=42, resume='', 
+#              start_epoch=0, eval=False, num_workers=2, world_size=4, dist_url='env://', rank=0, gpu=0, 
+#              distributed=True, dist_backend='nccl')
 
 def get_args_parser():
     parser = argparse.ArgumentParser('Set transformer detector', add_help=False)
