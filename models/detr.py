@@ -114,6 +114,7 @@ class SetCriterion(nn.Module):
             losses: list of all the losses to be applied. See get_loss for list of available losses.
         """
         super().__init__()
+        #print("SetCriterion num_classes", num_classes)
         self.num_classes = num_classes
         self.matcher = matcher
         self.weight_dict = weight_dict
@@ -127,6 +128,10 @@ class SetCriterion(nn.Module):
         """Classification loss (NLL)
         targets dicts must contain the key "labels" containing a tensor of dim [nb_target_boxes]
         """
+        #print("empty_weight",self.empty_weight.shape)
+        #print("outputs",outputs['pred_logits'].shape[-1])
+        #print("targets",targets)
+        #print("indices",indices)
         assert 'pred_logits' in outputs
         src_logits = outputs['pred_logits']
 
@@ -244,11 +249,13 @@ class SetCriterion(nn.Module):
 
         # Compute the average number of target boxes accross all nodes, for normalization purposes
         num_boxes = sum(len(t["labels"]) for t in targets)
+        #print("num_boxes",num_boxes)
         num_boxes = torch.as_tensor([num_boxes], dtype=torch.float, device=next(iter(outputs.values())).device)
         if is_dist_avail_and_initialized():
             torch.distributed.all_reduce(num_boxes)
         num_boxes = torch.clamp(num_boxes / get_world_size(), min=1).item()
 
+        #print("num_boxes",num_boxes)
         # Compute all the requested losses
         losses = {}
         for loss in self.losses:

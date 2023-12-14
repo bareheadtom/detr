@@ -4,6 +4,7 @@ sys.path.append('../../')
 from datasets.coco import CocoDetection as WCOCO,ConvertCocoPolysToMask,convert_coco_poly_to_mask  # 请将 'your_module' 替换为存放 CocoDetection 类的模块名称
 from PIL import Image
 import torch
+import torchvision
 class TestCocoDetection(unittest.TestCase):
     # def setUp(self):
     #     self.img_folder = '/datasets/COCO/train2017'
@@ -19,19 +20,15 @@ class TestCocoDetection(unittest.TestCase):
             [1.0800, 187.6900, 612.6700, 473.5300],
             [311.7300, 4.3100, 631.0100, 232.9900],
         ])
-
         labels = torch.tensor([51, 56])
-
         # 创建示例 masks（这里使用全零张量表示示例）
         masks = torch.zeros((2, 480, 640), dtype=torch.uint8)  # 假设 masks 的形状为 (8, 100, 100)
-
         # 创建示例数据的其余部分
         image_id = torch.tensor([2])
         area = torch.tensor([120057.1406, 44434.7500])
         iscrowd = torch.tensor([0, 0])
         orig_size = torch.tensor([480, 640])
         size = torch.tensor([480, 640])
-
         # 构造字典数据
         anno = {
             'boxes': boxes,
@@ -78,7 +75,15 @@ class TestCocoDetection(unittest.TestCase):
         segmentations = [obj["segmentation"] for obj in anno]
         masks = convert_coco_poly_to_mask(segmentations,428,640)
         print("masks",masks.shape,masks)
-
+    def test_torchvisiondatasetsCocoDetection(self):
+        print("\n***************test_torchvisiondatasetsCocoDetection")
+        cocodetec = torchvision.datasets.CocoDetection('/datasets/COCO/train2017','/datasets/COCO/annotations/instances_train2017.json')
+        image, target = cocodetec[2]
+        print(type(image),"target",target)
+        #print("ids",cocodetec.ids)
+        image = cocodetec._load_image(cocodetec.ids[2])
+        target = cocodetec._load_target(cocodetec.ids[2])
+        print(type(image),"target",target)
 
 
 if __name__ == '__main__':
